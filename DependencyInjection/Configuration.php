@@ -43,6 +43,16 @@ class Configuration implements ConfigurationInterface
                         $v['logger'] = $v['publisher_logger'];
                     }
 
+                    if ('pecl' === $v['provider']) {
+                        foreach ($v['connections'] as $connection) {
+                            if (array_key_exists('link', $connection)) {
+                                throw  new \UnexpectedValueException(
+                                    'Selected provider does not support parameter "link"'
+                                );
+                            }
+                        }
+                    }
+
                     if (!isset($v['consumers'])) {
                         $v['consumers'] = [];
                     }
@@ -127,6 +137,18 @@ class Configuration implements ConfigurationInterface
                                     ->booleanNode('verify_peer')->end()
                                     ->scalarNode('cafile')->end()
                                     ->scalarNode('local_cert')->end()
+                                ->end()
+                            ->end()
+
+                            ->arrayNode('link')
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->scalarNode('host')->defaultValue('127.0.0.1')->end()
+                                        ->integerNode('port')->defaultValue(5672)->end()
+                                        ->scalarNode('login')->defaultValue('guest')->end()
+                                        ->scalarNode('password')->defaultValue('guest')->end()
+                                        ->scalarNode('vhost')->defaultValue('/')->end()
+                                    ->end()
                                 ->end()
                             ->end()
                         ->end()
